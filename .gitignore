@@ -1,0 +1,10 @@
+*~
+/.settings
+.cache
+
+/project/project
+/project/target
+/target
+/lib
+
+Test.scala
