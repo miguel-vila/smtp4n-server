@@ -11,11 +11,6 @@ import akka.actor.{ActorLogging, Props}
 class RequestActor extends Actor {
 
   /**
-   * Referencia al actor encargado de manejar la persistencia de los estados de solicitud
-   */
-  val statusActor = context.system.actorOf(Props[StatusActor], "StatusActor")
-  
-  /**
    * Referencia al servicio de correo (clase Java)
    */
   val mailService = new MailService
@@ -34,13 +29,13 @@ class RequestActor extends Actor {
 	      {
 	        mailService.send(emailVO)
 //	        println("Sending SuccesfullRequest="+ticket.toString)
-	        statusActor ! SuccesfullRequest(requestTicket)
+	        sender ! SuccesfullRequest(requestTicket)
 	      }
 	      catch
 	      {
 	        case exception : Exception => {
 //	          println("Sending FailedRequest="+ticket.toString+", exception="+exception.getMessage)
-	          statusActor ! FailedRequestFactory(requestTicket, exception)
+	          sender ! FailedRequestFactory(requestTicket, exception)
 	        }
 	      }
       }

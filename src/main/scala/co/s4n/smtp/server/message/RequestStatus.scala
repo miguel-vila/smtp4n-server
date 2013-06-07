@@ -69,11 +69,11 @@ object FailedRequestFactory{
    */
   def getExceptionCauseTrace(throwable: java.lang.Throwable) : Array[Throwable] = {
     /**
-     * Método auxiliar para hacer tail recursion
+     * Método auxiliar para poder hacer tail recursion
      */
     def getExceptionCauseTraceHelperFunction(throwable: java.lang.Throwable, acc: List[Throwable]) : List[Throwable] =
       if(throwable.getCause() == null)	toThrowable(throwable)::acc
-      else	getExceptionCauseTraceHelperFunction(throwable.getCause(), toThrowable(throwable)::acc)
+      else								getExceptionCauseTraceHelperFunction(throwable.getCause(), toThrowable(throwable)::acc)
     getExceptionCauseTraceHelperFunction(throwable, Nil).toArray
   }
   
