@@ -16,11 +16,11 @@ class RequestActor extends Actor {
   val mailService = new MailService
   
   /**
-   * Recepción de mensajes
+   * Recepci贸n de mensajes
    */
   def receive = {
     /**
-     * Recepción de la solicitud: consiste en el correo y el ticket de solicitud
+     * Recepci贸n de la solicitud: consiste en el correo y el ticket de solicitud
      */
     case SendRequest(emailVO, requestTicket) =>
       {
@@ -28,13 +28,11 @@ class RequestActor extends Actor {
 	      try
 	      {
 	        mailService.send(emailVO)
-//	        println("Sending SuccesfullRequest="+ticket.toString)
 	        sender ! SuccesfullRequest(requestTicket)
 	      }
 	      catch
 	      {
 	        case exception : Exception => {
-//	          println("Sending FailedRequest="+ticket.toString+", exception="+exception.getMessage)
 	          sender ! FailedRequestFactory(requestTicket, exception)
 	        }
 	      }

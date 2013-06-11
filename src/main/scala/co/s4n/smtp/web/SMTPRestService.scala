@@ -11,7 +11,6 @@ import co.s4n.smtp.server.message.FailedRequestJsonProtocol.failedRequestUnmarsh
 import spray.httpx.SprayJsonSupport._
 import spray.http.StatusCodes._
 import scala.concurrent.duration.Duration
-import scala.actors.Future
 import scala.concurrent.Await
 import scalaz.Validation
 import spray.routing.HttpServiceActor

@@ -3,13 +3,19 @@ package co.s4n.smtp.server.actor
 import akka.actor.{ Actor, Props, OneForOneStrategy }
 import co.s4n.smtp.server.message.{ SendRequest, RequestStatus }
 import akka.actor.SupervisorStrategy.Restart
+import scala.language.postfixOps
 import scala.concurrent.duration._
 
 /**
  * Actor que supervisa los actores y que unifica la lógica de la aplicación
  */
 class MailServiceActor extends Actor{
-	
+
+  /**
+   * Función para obtener los parametros de configuración
+   */
+  def getString(key: String) = context.system.settings.config.getString("co.s4n.smtp.server."+key)
+  
    /**
    * Actor que atiende las solicitudes de envío de correo
    */
@@ -18,7 +24,7 @@ class MailServiceActor extends Actor{
   /**
    * Actor que maneja la persistencia de los estados de solicitud
    */
-  val statusActor = context.actorOf(Props[StatusActor], "StatusActor")
+  val statusActor = context.actorOf(Props(new StatusActor(getString("riak.riakURL"), getString("riak.bucketName"))), "StatusActor")
   
   def receive = 
   {
