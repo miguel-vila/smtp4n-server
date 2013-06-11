@@ -11,19 +11,15 @@ import scalaz.{ Validation, NonEmptyList }
  */
 class RiakClient(val riakURL: String, val bucketName: String) {
 
-  
-  println("ASFasdfasd")
   /**
    * Cliente de Riak
    */
   protected val scaliakClient = Scaliak.httpClient( riakURL )
-  println("ASFasdfasd2")
   
   /**
    * Bucket donde se van a almacenar los estados de solicitud
    */
   protected val bucket = scaliakClient.bucket( bucketName ).unsafePerformIO() valueOr { throw _ }
-println("ASFasdfasd3")
   
   /**
    * Convierte un RequestStatus en un arreglo de bytes y viceversa
@@ -76,5 +72,8 @@ println("ASFasdfasd3")
    */
   def fetchAll() = bucket.listKeys.unsafePerformIO.valueOr(throw _).map(key => fetch(key.toLong).valueOr(x => throw x.head)).map(x => x.get).toList
 
-  //  def shutdown() = scaliakClient.shutdown
+  /**
+   * Dseconecta el cliente de riak
+   */
+  def shutdown() = scaliakClient.shutdown
 }

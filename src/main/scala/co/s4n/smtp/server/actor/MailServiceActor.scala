@@ -7,7 +7,7 @@ import scala.language.postfixOps
 import scala.concurrent.duration._
 
 /**
- * Actor que supervisa los actores y que unifica la lógica de la aplicación
+ * Actor que unifica la lógica de la aplicación y que supervisa los actores 
  */
 class MailServiceActor extends Actor{
 

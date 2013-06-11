@@ -24,7 +24,6 @@ class RequestActor extends Actor {
      */
     case SendRequest(emailVO, requestTicket) =>
       {
-    	  println("Received SendRequest(emailVO="+emailVO.toString+", ticket="+requestTicket.toString+")")
 	      try
 	      {
 	        mailService.send(emailVO)
@@ -32,9 +31,7 @@ class RequestActor extends Actor {
 	      }
 	      catch
 	      {
-	        case exception : Exception => {
-	          sender ! FailedRequestFactory(requestTicket, exception)
-	        }
+	        case exception : Exception => sender ! FailedRequestFactory(requestTicket, exception)
 	      }
       }
   }

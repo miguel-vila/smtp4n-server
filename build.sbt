@@ -39,6 +39,7 @@ resolvers ++= Seq(
 
 libraryDependencies ++= Seq(
 	"com.typesafe.akka" %% "akka-actor" % "2.1.0",
+	"com.typesafe.akka" %% "akka-testkit" % "2.1.0",
 	"com.typesafe.akka" %% "akka-slf4j" % "2.1.0",
 	"io.spray" % "spray-http" % "1.1-M7",
 	"io.spray" % "spray-httpx" % "1.1-M7",
