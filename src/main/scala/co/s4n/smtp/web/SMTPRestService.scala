@@ -24,7 +24,7 @@ class SMTPRestServiceActor extends hasSendEmailRoute with hasSingleStatusRespons
 }
 
 /**
- * Trait que modulariza 
+ * Trait que modulariza la ruta de envío de correos
  */
 trait withMailServiceActor extends Actor with HttpServiceActor {
   /**
@@ -51,6 +51,9 @@ trait hasSendEmailRoute extends withMailServiceActor{
     }
 }
 
+/**
+ * Trait que modulariza la ruta de consulta de un único estado de solicitud
+ */
 trait hasSingleStatusResponse extends withMailServiceActor{
   /**
    * Ruta de respuesta de un único estado de solicitud
