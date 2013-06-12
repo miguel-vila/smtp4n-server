@@ -19,41 +19,45 @@ import scalaz.NonEmptyList
 /**
  * SMTPRestServiceActor: Actor que hace el ruteo Http
  */
-class SMTPRestServiceActor extends Actor with HttpServiceActor {
+class SMTPRestServiceActor extends hasSendEmailRoute with hasSingleStatusResponse{
+  def receive = runRoute(sendEmailRoute ~ getSingleStatusRoute)
+}
 
-  def receive = runRoute(mailServiceRoute)
-
+/**
+ * Trait que modulariza 
+ */
+trait withMailServiceActor extends Actor with HttpServiceActor {
   /**
    * Actor que unifica la lógica del servidor
    */
   val mailServiceActor = actorRefFactory.actorOf(Props[MailServiceActor], "RequestActor")
+}
 
+trait hasSendEmailRoute extends withMailServiceActor{
   /**
-   * Ruteo
+   * Ruta de recepción de un correo
+   * Recibe un Email en JSON
+   * Devuelve el ticket (identificador único) de la solicitud
    */
-  val mailServiceRoute = {
-    /**
-     * Recepción de un correo
-     * Recibe un Email en JSON
-     * Devuelve el ticket (identificador único) de la solicitud
-     */
+  val sendEmailRoute =
     path("send") {
       post {
         entity(as[Email]) { email =>
-          println("Request received: " + email.toString)
           val ticket = System.currentTimeMillis
           mailServiceActor ! SendRequest(email.toEmailVO, ticket)
-          println("Sending RequestTicket: " + ticket.toString)
           complete(Accepted, ticket.toString)
         }
       }
-    } ~
-    /**
-     * Solicitudes de estado
-     * Recibe un parámetro requestTicket 
-     * Devuelve el estado de la solicitud
-     */
-      get {
+    }
+}
+
+trait hasSingleStatusResponse extends withMailServiceActor{
+  /**
+   * Ruta de respuesta de un único estado de solicitud
+   * Ruta que recibe un parámetro requestTicket 
+   * Devuelve el estado de la solicitud
+   */
+  val getSingleStatusRoute = get {
         parameters("requestTicket") { requestTicketString =>
           try {
             val requestTicket = requestTicketString.toLong
@@ -72,6 +76,4 @@ class SMTPRestServiceActor extends Actor with HttpServiceActor {
           }
         }
       }
-  }
-
 }

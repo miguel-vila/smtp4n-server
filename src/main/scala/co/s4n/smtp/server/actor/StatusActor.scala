@@ -26,7 +26,7 @@ class StatusActor(val riakURL: String, val bucketName: String) extends Actor{
     /**
      * Cuando recibe un estado de solicitud lo persiste
      */
-  	case requestStatus: RequestStatus => riakClient.store(requestStatus)
+  	case requestStatus: RequestStatus => {println("Storing:"+requestStatus);riakClient.store(requestStatus)}
     
   	/**
   	 * Cuando recibe el ticket de una solicitud busca en el repositorio su respectivo estado
