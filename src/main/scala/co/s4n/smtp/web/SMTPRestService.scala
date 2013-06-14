@@ -1,8 +1,7 @@
 package co.s4n.smtp.web
 
 import akka.actor.{ Actor, ActorSystem, actorRef2Scala, ActorLogging, Props }
-
-import akka.pattern.Patterns
+import akka.pattern.ask
 import akka.util.Timeout
 import co.s4n.smtp.server.actor.MailServiceActor
 import co.s4n.smtp.server.message.{ Email, SendRequest, RequestStatus, SuccesfullRequest, FailedRequest, FailedRequestFactory }
@@ -10,23 +9,32 @@ import co.s4n.smtp.server.message.EmailMessageJsonProtocol.emailUnmarshaller
 import co.s4n.smtp.server.message.FailedRequestJsonProtocol.failedRequestUnmarshaller
 import spray.httpx.SprayJsonSupport._
 import spray.http.StatusCodes._
-import scala.concurrent.duration.Duration
+import scala.concurrent.duration._
 import scala.concurrent.Await
 import scalaz.Validation
 import spray.routing.HttpServiceActor
 import scalaz.NonEmptyList
+import spray.routing.HttpService
 
 /**
  * SMTPRestServiceActor: Actor que hace el ruteo Http
  */
-class SMTPRestServiceActor extends hasSendEmailRoute with hasSingleStatusResponse{
-  def receive = runRoute(sendEmailRoute ~ getSingleStatusRoute)
+class SMTPRestServiceActor extends SMTPRestService with Actor{
+  val actorRefFactory = context.system
+  def receive = runRoute(route)
+}
+
+/**
+ * SMTPRestService: Actor que hace el ruteo Http
+ */
+trait SMTPRestService extends hasSendEmailRoute with hasSingleStatusResponse{
+  val route = sendEmailRoute ~ getSingleStatusRoute
 }
 
 /**
  * Trait que modulariza la ruta de envío de correos
  */
-trait withMailServiceActor extends Actor with HttpServiceActor {
+trait withMailServiceActor extends HttpService {
   /**
    * Actor que unifica la lógica del servidor
    */
@@ -64,8 +72,8 @@ trait hasSingleStatusResponse extends withMailServiceActor{
         parameters("requestTicket") { requestTicketString =>
           try {
             val requestTicket = requestTicketString.toLong
-            val timeout = Timeout(Duration.create(5, "seconds"))
-            val validationFuture = Patterns.ask(mailServiceActor, requestTicket, timeout).mapTo[Validation[NonEmptyList[Throwable], Option[RequestStatus]]]
+            implicit val timeout = Timeout(Duration.create(5, "seconds"))
+            val validationFuture = (mailServiceActor ? requestTicket).mapTo[Validation[NonEmptyList[Throwable], Option[RequestStatus]]]
             val validation = Await.result(validationFuture, Duration.create(5, "seconds"))
             validation.fold(
               fail => complete(InternalServerError, FailedRequestFactory(requestTicket, fail)),
