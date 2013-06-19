@@ -15,26 +15,19 @@ import scalaz.Validation
 import spray.routing.HttpServiceActor
 import scalaz.NonEmptyList
 import spray.routing.HttpService
+import akka.pattern.Patterns
 
 /**
  * SMTPRestServiceActor: Actor que hace el ruteo Http
  */
-class SMTPRestServiceActor extends SMTPRestService with Actor{
-  val actorRefFactory = context.system
-  def receive = runRoute(route)
-}
-
-/**
- * SMTPRestService: Actor que hace el ruteo Http
- */
-trait SMTPRestService extends hasSendEmailRoute with hasSingleStatusResponse{
-  val route = sendEmailRoute ~ getSingleStatusRoute
+class SMTPRestServiceActor extends hasSendEmailRoute with hasSingleStatusResponse{
+  def receive = runRoute(sendEmailRoute ~ getSingleStatusRoute)
 }
 
 /**
  * Trait que modulariza la ruta de envío de correos
  */
-trait withMailServiceActor extends HttpService {
+trait withMailServiceActor extends Actor with HttpServiceActor {
   /**
    * Actor que unifica la lógica del servidor
    */
@@ -72,8 +65,8 @@ trait hasSingleStatusResponse extends withMailServiceActor{
         parameters("requestTicket") { requestTicketString =>
           try {
             val requestTicket = requestTicketString.toLong
-            implicit val timeout = Timeout(Duration.create(5, "seconds"))
-            val validationFuture = (mailServiceActor ? requestTicket).mapTo[Validation[NonEmptyList[Throwable], Option[RequestStatus]]]
+            val timeout = Timeout(Duration.create(5, "seconds"))
+            val validationFuture = Patterns.ask(mailServiceActor, requestTicket, timeout).mapTo[Validation[NonEmptyList[Throwable], Option[RequestStatus]]]
             val validation = Await.result(validationFuture, Duration.create(5, "seconds"))
             validation.fold(
               fail => complete(InternalServerError, FailedRequestFactory(requestTicket, fail)),
